@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
@@ -15,12 +14,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
 
-
-# 
-# STEP 1: Data Import
-#
-
-url = "https://raw.githubusercontent.com/jbrownlee/Datasets/master/iris.csv"
+DATA_PATH = "iris.txt"
 
 column_names = [
     "sepal_length",
@@ -30,7 +24,12 @@ column_names = [
     "class"
 ]
 
-df = pd.read_csv(url, names=column_names)
+df = pd.read_csv(
+    DATA_PATH,
+    header=None,
+    names=column_names,
+    sep=","
+)
 
 print("Dataset shape:")
 print(df.shape)
@@ -46,11 +45,6 @@ print(df.isna().sum())
 
 print("\nClass distribution:")
 print(df["class"].value_counts())
-
-
-# 
-# STEP 2: Prepare Features and Target
-# 
 
 X = df[
     [
@@ -69,19 +63,12 @@ print(X.shape)
 print("\nTarget shape:")
 print(y.shape)
 
-
-# 
-# STEP 3: Split Data
-# 80% training data
-# 20% testing/validation data
-# random_state = 7
-# 
-
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     y,
     test_size=0.20,
-    random_state=7
+    random_state=7,
+    stratify=y
 )
 
 print("\nTraining set:")
@@ -90,11 +77,6 @@ print(X_train.shape, y_train.shape)
 print("\nTesting set:")
 print(X_test.shape, y_test.shape)
 
-
-# 
-# STEP 4: Build and Train Six Classification Models
-#
-
 models = [
     (
         "Logistic Regression",
@@ -102,9 +84,8 @@ models = [
             steps=[
                 ("scaler", StandardScaler()),
                 ("classifier", LogisticRegression(
-                    solver="liblinear",
-                    multi_class="ovr",
-                    max_iter=200
+                    solver="lbfgs",
+                    max_iter=1000
                 ))
             ]
         )
@@ -148,12 +129,6 @@ models = [
     )
 ]
 
-
-# 
-# STEP 5: Compare Output
-# Accuracy, Confusion Matrix, Classification Report
-#
-
 results = []
 
 for model_name, model in models:
@@ -183,11 +158,6 @@ for model_name, model in models:
     print("\nClassification Report:")
     print(classification_report(y_test, y_pred))
 
-
-# 
-# STEP 6: Compare Accuracy and Plot
-# 
-
 results_df = pd.DataFrame(results)
 
 print("\n====================================================")
@@ -201,9 +171,6 @@ best_model = results_df.loc[results_df["Accuracy"].idxmax()]
 print("\nBest model:")
 print(best_model)
 
-
-# Plot algorithm comparison
-
 plt.figure(figsize=(11, 6))
 plt.bar(results_df["Model"], results_df["Accuracy"])
 plt.xlabel("Classification Algorithm")
@@ -212,7 +179,7 @@ plt.title("Algorithm Comparison")
 plt.xticks(rotation=35, ha="right")
 plt.ylim(0, 1.1)
 plt.tight_layout()
-plt.savefig("algorithm_comparison.png")
+plt.savefig("algorithm_comparison.png", dpi=300)
 plt.show()
 
 print("\nAlgorithm comparison plot saved as:")
